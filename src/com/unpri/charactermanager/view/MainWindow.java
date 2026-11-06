@@ -11,9 +11,11 @@ import javax.swing.SwingConstants;
 
 public class MainWindow extends JFrame {
 
-    private JPanel mainPanel;
+    private static final long serialVersionUID = 1L;
+
     private final ArrayList<Character> characterList;
 
+    @SuppressWarnings("this-escape")
     public MainWindow(ArrayList<Character> characterList) {
         super("Character Manager v0.4");
         this.characterList = characterList;
@@ -27,20 +29,18 @@ public class MainWindow extends JFrame {
     }
 
     private void initComponents() {
-        mainPanel = new JPanel(new GridLayout(0, 1, 0, 8));
+        JPanel mainPanel = new JPanel(new GridLayout(0, 1, 0, 8));
         mainPanel.setBackground(AppTheme.BG_MAIN);
         mainPanel.setBorder(AppTheme.PANEL_BORDER);
 
         mainPanel.add(createTitleLabel());
-
-        for (Character c : characterList) {
-            mainPanel.add(createCharacterLabel(c));
+        for (Character character : characterList) {
+            mainPanel.add(createCharacterLabel(character));
         }
 
         add(mainPanel);
     }
 
-    /** Membuat judul layar. */
     private JLabel createTitleLabel() {
         JLabel label = new JLabel(
                 "Daftar Karakter (" + characterList.size() + ")",
@@ -51,15 +51,15 @@ public class MainWindow extends JFrame {
         return label;
     }
 
-    /** Membuat satu kartu karakter. */
     private JLabel createCharacterLabel(Character character) {
         String info = character.getName() + " | " + character.getType()
                 + " | Lv." + character.getLevel()
                 + " | HP:" + character.getHitPoints()
                 + " | ATK:" + character.getAttackPower();
 
+        boolean highLevel =
+                character.getLevel() >= AppTheme.LEVEL_HIGHLIGHT_THRESHOLD;
         JLabel label = new JLabel(info);
-        boolean highLevel = character.getLevel() >= AppTheme.LEVEL_HIGHLIGHT_THRESHOLD;
         label.setFont(highLevel ? AppTheme.FONT_LEVEL_HIGH : AppTheme.FONT_BODY);
         label.setForeground(highLevel ? AppTheme.GOLD : AppTheme.TEXT_LIGHT);
         label.setBackground(AppTheme.colorFor(character.getType()));
