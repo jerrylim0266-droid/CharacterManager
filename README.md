@@ -51,6 +51,25 @@ menggunakan `SwingUtilities.invokeLater()`.
   tinggi untuk menambah variasi level dan tipe karakter.
 
 
+# TP10 — AppTheme, Properti Swing, dan MVC
+
+## Perbandingan tampilan
+
+Sebelum (MainWindow v0.3):
+
+![MainWindow v0.3 sebelum penerapan tema](images/MainWindow-TP8.png)
+
+Sesudah (MainWindow v0.4):
+
+![MainWindow v0.4 dengan AppTheme](images/MainWindow-TP10-v04.png)
+
+Warna disimpan di `AppTheme` karena warna adalah keputusan presentasi, bukan data karakter. Dengan begitu, `Character` tetap bisa dipakai tanpa bergantung pada AWT atau Swing, sementara View dapat mengganti palet tanpa mengubah Model. Arah dependensi tetap satu arah: View membaca `CharacterType` dari Model untuk memilih warna, tetapi Model tidak mengenal View. Pemusatan ini juga mencegah aturan tampilan yang sama tersebar dan berbeda-beda di banyak komponen.
+
+## Dua properti tambahan
+
+- **Tooltip detail** menampilkan role, HP, dan ATK ketika kartu disorot, sehingga informasi tambahan tersedia tanpa membuat daftar lebih padat.
+- **Border sesuai role** mengulang kode warna role pada tepian kartu, sehingga jenis karakter tetap mudah dibedakan dan tampil konsisten.
+
 # Struktur Folder Project
 
 ```text

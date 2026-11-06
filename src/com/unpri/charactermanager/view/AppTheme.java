@@ -50,6 +50,7 @@ public final class AppTheme {
             case WARRIOR: return "Warrior: jarak dekat, HP tinggi";
             case MAGE:    return "Mage: serangan sihir, HP rendah";
             case ARCHER:  return "Archer: jarak jauh, seimbang";
+            case HEALER:  return "Healer: memulihkan dan mendukung tim";
             default:      return "Role belum terdaftar";
         }
     }
