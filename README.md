@@ -53,7 +53,7 @@ menggunakan `SwingUtilities.invokeLater()`.
 
 # TP10 — AppTheme, Properti Swing, dan MVC
 
-## Perbandingan tampilan
+# Perbandingan tampilan
 
 Sebelum (MainWindow v0.3):
 
@@ -65,7 +65,7 @@ Sesudah (MainWindow v0.4):
 
 Warna disimpan di `AppTheme` karena warna adalah keputusan presentasi, bukan data karakter. Dengan begitu, `Character` tetap bisa dipakai tanpa bergantung pada AWT atau Swing, sementara View dapat mengganti palet tanpa mengubah Model. Arah dependensi tetap satu arah: View membaca `CharacterType` dari Model untuk memilih warna, tetapi Model tidak mengenal View. Pemusatan ini juga mencegah aturan tampilan yang sama tersebar dan berbeda-beda di banyak komponen.
 
-## Hasil run v0.4
+# Hasil run v0.4
 
 Program berhasil menampilkan enam karakter. Level 5 ke atas ditampilkan dengan
 teks emas tebal, sedangkan warna kartu mengikuti role masing-masing.
@@ -82,32 +82,53 @@ Luna       | HEALER  | Lv.2 | HP:120 | ATK:20
 
 ![Hasil run MainWindow v0.4](images/Screenshot%20MainWindow-TP10.v4.0.png)
 
-## Dua properti tambahan
+# dua porpeti tambahan
 
 - **Tooltip detail** menampilkan role, HP, dan ATK ketika kartu disorot, sehingga informasi tambahan tersedia tanpa membuat daftar lebih padat.
 - **Border sesuai role** mengulang kode warna role pada tepian kartu, sehingga jenis karakter tetap mudah dibedakan dan tampil konsisten.
 
-## Analisis Bagian D
+# TP12 — Layout Adaptif dan Pengamatan Resize
 
-### JavaBeans dan properti Swing
+# Wireframe
 
-Komponen Swing mengikuti konvensi JavaBeans: nilai properti dibaca melalui getter seperti `getForeground()` dan diubah lewat setter seperti `setForeground(Color)`. Pola ini membuat cara akses properti dapat dikenali IDE, alat inspeksi, dan mekanisme binding. Setter juga memberi komponen kesempatan menjaga perilaku yang terkait dengan perubahan tersebut, misalnya memperbarui nilai properti yang tercatat, memberi tahu listener melalui property-change event, atau meminta tampilan digambar ulang. Karena itu, mengubah field internal secara langsung bukan hanya melanggar enkapsulasi, tetapi juga dapat membuat layar atau listener tetap memakai nilai lama. Memanggil `setForeground()` menyampaikan perubahan melalui antarmuka resmi komponen sehingga perilakunya tetap konsisten.
+```text
++------------------------------------------------------+
+| Character Manager                         9 karakter |
+| Karakter: 9       Role: 4                             |
+| Rata-rata level: 4.2          Level tertinggi: 8      |
++------------------------------------------+-----------+
+| Daftar karakter (JScrollPane)            | Legenda   |
+| kartu 1                                  | WARRIOR   |
+| kartu 2                                  | MAGE      |
+| ...                                      | ARCHER    |
+|                                          | HEALER    |
++------------------------------------------+-----------+
+| Total: 9 karakter | Siap                       v0.5 |
++------------------------------------------------------+
+```
 
-### Mengapa latar `JLabel` tidak tampak
+# Screenshot hasil pengujian
 
-Pada contoh `JLabel l = new JLabel("HP"); l.setBackground(Color.RED); panel.add(l);`, nilai background sudah merah, tetapi `JLabel` secara default tidak melukis latarnya sendiri karena sifatnya tidak opaque. Supaya warna terlihat, aktifkan `l.setOpaque(true)` setelah `setBackground(Color.RED)`. Alternatifnya, jika yang ingin diberi latar adalah seluruh area, atur background pada `JPanel` yang membungkus label. Properti `opaque` menyatakan bahwa komponen menutupi seluruh area yang ditempatinya dan bertanggung jawab menggambar latar tersebut.
+Screenshot ukuran awal dan saat jendela dilebarkan berasal dari hasil aplikasi yang sudah dikirim.
 
-### Ukuran komponen dan layout
+![Ukuran awal](images/TP12-ukuran-awal.png)
 
-`setSize(width, height)` menetapkan ukuran aktual komponen atau jendela; nilainya dapat berubah ketika layout mengatur ulang komponennya. `setPreferredSize(dimension)` menyampaikan ukuran yang diinginkan kepada layout manager, bukan menjamin ukuran itu selalu dipakai. `pack()` menghitung ukuran jendela berdasarkan preferred size komponen dan layout yang digunakan, sehingga umumnya menjadi pilihan tepat setelah seluruh isi UI dipasang. `setBounds(x, y, width, height)` menetapkan posisi dan ukuran sekaligus; cara ini sering dipasangkan dengan null layout. Null layout dihindari karena programmer harus menghitung koordinat sendiri, dan tata letak mudah rusak ketika ukuran jendela, teks, skala tampilan, atau font berbeda. Layout manager lebih adaptif serta menjaga susunan komponen saat ukuran berubah.
+![Jendela dilebarkan](images/TP12-jendela-dilebarkan.png)
 
-### Batas Model dan View dalam MVC
+![Jendela dikecilkan sampai scrollbar terlihat](images/TP12-scrollbar-terlihat.png)
 
-Pemetaan `CharacterType` ke warna adalah keputusan presentasi, sehingga diletakkan di `AppTheme` pada layer View. Model cukup menyimpan fakta domain seperti role dan level; ia tidak perlu mengimpor AWT atau mengetahui bagaimana sebuah karakter digambar. Jika `Character` menyimpan `Color`, Model menjadi bergantung pada teknologi UI: pemakaian ulang untuk aplikasi terminal atau layanan tanpa GUI menjadi lebih sulit, dan pengujian Model memerlukan kelas tampilan. Konsekuensi lain, perubahan tema atau kebutuhan tampilan alternatif dapat memaksa perubahan dan pengujian ulang Model, walaupun aturan bisnisnya tidak berubah. Ketergantungan berbalik seperti itu juga membuat pemisahan tugas dan perawatan proyek lebih rumit. Pada desain ini, View boleh membaca `CharacterType` dari Model lalu memilih warna, tetapi Model tidak mengimpor atau memanggil View.
+# Pengamatan resize
 
-### Font logis dan `deriveFont()`
+| Kondisi | Prediksi | Hasil Pengamatan |
+|---|---|---|
+| Ukuran awal | Header, statistik, legenda, dan status terlihat. Daftar dapat digulir jika kartu melebihi viewport. | Belum diverifikasi melalui capture. |
+| Jendela dilebarkan | Panel `CENTER` mengambil ruang tambahan. Kartu tetap tersusun dalam satu kolom dan area daftar menjadi lebih lebar. | Belum diverifikasi melalui capture. |
+| Jendela dikecilkan | Panel `CENTER` menyempit dan scrollbar daftar terlihat. Ukuran minimum menjaga tata letak tetap terbaca. | Belum diverifikasi melalui capture. |
 
-Nama font fisik tertentu belum tentu terpasang pada setiap komputer. Jika font tidak tersedia, sistem dapat menggantinya dengan font lain yang mungkin berbeda metrik dan tampilannya. Nama logis seperti `SansSerif` dan `Monospaced` dipetakan Java ke font yang tersedia, sehingga pilihan ini lebih portabel. `deriveFont()` menghasilkan objek font baru dengan ukuran atau gaya turunan, tanpa mengubah objek `Font` asal. Perhatikan tipe argumennya: `deriveFont(20)` memilih overload `deriveFont(int style)`, jadi angka 20 diperlakukan sebagai bit gaya, bukan ukuran 20 poin. Gunakan `deriveFont(20f)` untuk overload ukuran bertipe `float`, atau `deriveFont(Font.BOLD, 20f)` jika sekaligus ingin menetapkan gaya tebal dan ukuran.
+`JFrame` menggunakan `BorderLayout` sebagai kerangka utama, dengan header di `NORTH`, daftar di `CENTER`, legenda di `EAST`, dan status di `SOUTH`. Header merupakan panel bersarang: baris judul menggunakan `BorderLayout`, lalu panel statistik `GridLayout` 2x2 diletakkan di bawahnya. Daftar satu kolom disusun dalam panel kartu, ditempatkan di `NORTH` sebuah panel pembungkus, lalu panel itu dimasukkan ke `JScrollPane`. Legenda memakai `BoxLayout.Y_AXIS`, sedangkan status memakai `BorderLayout` agar teks dan versi berada di sisi berlawanan.
+
+Panel statistik dipilih agar empat nilai mempunyai sel berukuran seragam dan mudah dibandingkan dalam bentuk dua baris dan dua kolom. `FlowLayout` ditolak untuk statistik karena lebar tiap label berbeda dan alirannya dapat berpindah baris saat jendela berubah ukuran; `GridLayout` membuat susunan ringkas lebih konsisten.
+
 
 # Struktur Folder Project
 
@@ -118,7 +139,10 @@ CharacterManager/
 │   ├── Screenshot MainWindow.png
 │   ├── MainWindow-TP8.png
 │   ├── Screenshot MainWindow-TP10.v4.0.png
-│   └── screenshot output CRUD.png
+│   ├── screenshot output CRUD.png
+│   ├── TP12-ukuran-awal.png
+│   ├── TP12-jendela-dilebarkan.png
+│   └── TP12-scrollbar-terlihat.png
 └── src/
     ├── Main.java
     └── com/
@@ -144,3 +168,5 @@ CharacterManager/
 - Google Docs — TP8 Bagian D:[Buka dokumen Google Docs](https://docs.google.com/document/d/1lkHuX0GrZKFleA6RWSVx6Ncd8AULnxsUxsS6v9YgOO0/edit?usp=sharing)
 
 - Google Docs — TP10 Bagian D:[Buka dokumen Google Docs](https://docs.google.com/document/d/1BN0ADzrpbspCdLpf3GC0eMQ7rpXkaZK-UzuvVE7buAY/edit?usp=sharing)
+
+- Google Docs — TP12 bagian D:[Buka dokumen Google Docs](https://docs.google.com/document/d/1b9nhzCemmz9y30Uf0B_O22DC56GGbE1eh-lrj8qH7Hc/edit?usp=sharing)

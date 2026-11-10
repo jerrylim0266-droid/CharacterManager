@@ -12,7 +12,9 @@ public final class AppTheme {
     public static final int LEVEL_HIGHLIGHT_THRESHOLD = 5;
 
     public static final Color BG_MAIN = Color.decode("#13131f");
+    public static final Color BG_STATUS = Color.decode("#1e1e2e");
     public static final Color TEXT_MAIN = Color.decode("#dfe6e9");
+    public static final Color TEXT_MUTED = Color.decode("#a0a8b7");
     public static final Color TEXT_LIGHT = Color.WHITE;
     public static final Color GOLD = Color.decode("#fdcb6e");
     public static final Color WARRIOR = Color.decode("#d63031");
@@ -34,18 +36,13 @@ public final class AppTheme {
     }
 
     public static Color colorFor(CharacterType type) {
-        switch (type) {
-            case WARRIOR:
-                return WARRIOR;
-            case MAGE:
-                return MAGE;
-            case ARCHER:
-                return ARCHER;
-            case HEALER:
-                return HEALER;
-            default:
-                return Color.GRAY;
-        }
+        return switch (type) {
+            case WARRIOR -> WARRIOR;
+            case MAGE -> MAGE;
+            case ARCHER -> ARCHER;
+            case HEALER -> HEALER;
+            default -> Color.GRAY;
+        };
     }
 
     public static Border cardBorderFor(CharacterType type) {
@@ -56,17 +53,12 @@ public final class AppTheme {
     }
 
     public static String describe(CharacterType type) {
-        switch (type) {
-            case WARRIOR:
-                return "Warrior: jarak dekat, HP tinggi";
-            case MAGE:
-                return "Mage: serangan sihir, HP rendah";
-            case ARCHER:
-                return "Archer: jarak jauh, seimbang";
-            case HEALER:
-                return "Healer: memulihkan dan mendukung tim";
-            default:
-                return "Role belum terdaftar";
-        }
+        return switch (type) {
+            case WARRIOR -> "Warrior: jarak dekat, HP tinggi";
+            case MAGE -> "Mage: serangan sihir, HP rendah";
+            case ARCHER -> "Archer: jarak jauh, seimbang";
+            case HEALER -> "Healer: memulihkan dan mendukung tim";
+            default -> "Role belum terdaftar";
+        };
     }
 }
