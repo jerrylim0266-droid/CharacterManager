@@ -12,9 +12,9 @@ public final class AppTheme {
     public static final int LEVEL_HIGHLIGHT_THRESHOLD = 5;
 
     public static final Color BG_MAIN = Color.decode("#13131f");
-    public static final Color BG_STATUS = Color.decode("#1e1e2e");
+    public static final Color BG_STATUS = Color.decode("#0d0d1a");
     public static final Color TEXT_MAIN = Color.decode("#dfe6e9");
-    public static final Color TEXT_MUTED = Color.decode("#a0a8b7");
+    public static final Color TEXT_MUTED = Color.decode("#9d9dbf");
     public static final Color TEXT_LIGHT = Color.WHITE;
     public static final Color GOLD = Color.decode("#fdcb6e");
     public static final Color WARRIOR = Color.decode("#d63031");

@@ -1,24 +1,24 @@
 package com.unpri.charactermanager.view;
 
+import com.unpri.charactermanager.model.Character;
+import com.unpri.charactermanager.model.CharacterType;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import com.unpri.charactermanager.model.Character;
-import com.unpri.charactermanager.model.CharacterType;
 
 public class MainWindow extends JFrame {
 
-    private final ArrayList<Character> characterList; // data dari Main.java (Model)
+    private ArrayList<Character> characterList;     // data dari Main.java (Model)
 
     public MainWindow(ArrayList<Character> characterList) {
         super("Character Manager v0.5");            // sprint #5
@@ -44,12 +44,10 @@ public class MainWindow extends JFrame {
 
     /** NORTH: judul di kiri, jumlah karakter di kanan. */
     private JPanel createHeaderPanel() {
-        JPanel header = new JPanel(new BorderLayout());
+        JPanel header = new JPanel(new BorderLayout());     // panel bersarang dengan layout sendiri
         header.setBackground(AppTheme.BG_MAIN);
         header.setBorder(BorderFactory.createEmptyBorder(16, 16, 8, 16)); // atas, kiri, bawah, kanan
 
-        JPanel titleRow = new JPanel(new BorderLayout());
-        titleRow.setBackground(AppTheme.BG_MAIN);
         JLabel title = new JLabel("Character Manager");
         title.setFont(AppTheme.FONT_TITLE);
         title.setForeground(AppTheme.TEXT_MAIN);
@@ -58,43 +56,9 @@ public class MainWindow extends JFrame {
         count.setFont(AppTheme.FONT_BODY);
         count.setForeground(AppTheme.GOLD);
 
-        titleRow.add(title, BorderLayout.WEST);
-        titleRow.add(count, BorderLayout.EAST);
-        header.add(titleRow, BorderLayout.NORTH);
-        header.add(createStatisticsPanel(), BorderLayout.SOUTH);
+        header.add(title, BorderLayout.WEST);               // rata kiri
+        header.add(count, BorderLayout.EAST);               // rata kanan
         return header;
-    }
-
-    private JPanel createStatisticsPanel() {
-        JPanel statistics = new JPanel(new GridLayout(2, 2, 8, 4));
-        statistics.setBackground(AppTheme.BG_MAIN);
-        statistics.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
-
-        int totalLevels = 0;
-        int highestLevel = 0;
-        EnumSet<CharacterType> types = EnumSet.noneOf(CharacterType.class);
-        for (Character character : characterList) {
-            totalLevels += character.getLevel();
-            highestLevel = Math.max(highestLevel, character.getLevel());
-            types.add(character.getType());
-        }
-        double averageLevel = characterList.isEmpty()
-                ? 0
-                : (double) totalLevels / characterList.size();
-
-        statistics.add(createStatisticLabel("Karakter: " + characterList.size()));
-        statistics.add(createStatisticLabel("Role: " + types.size()));
-        statistics.add(createStatisticLabel(String.format(
-                java.util.Locale.ROOT, "Rata-rata level: %.1f", averageLevel)));
-        statistics.add(createStatisticLabel("Level tertinggi: " + highestLevel));
-        return statistics;
-    }
-
-    private JLabel createStatisticLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(AppTheme.FONT_BODY);
-        label.setForeground(AppTheme.TEXT_MUTED);
-        return label;
     }
 
     /** CENTER: kartu karakter di dalam JScrollPane. */
@@ -164,20 +128,15 @@ public class MainWindow extends JFrame {
         return legend;
     }
 
-    /** SOUTH: status di kiri dan versi aplikasi di kanan. */
+    /** SOUTH: bar status rata kiri. */
     private JPanel createStatusPanel() {
-        JPanel status = new JPanel(new BorderLayout());
+        JPanel status = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 6));
         status.setBackground(AppTheme.BG_STATUS);
-        status.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 16));
 
         JLabel lbl = new JLabel("Total: " + characterList.size() + " karakter  |  Siap");
         lbl.setFont(AppTheme.FONT_MONO);
         lbl.setForeground(AppTheme.TEXT_MUTED);
-        JLabel version = new JLabel("v0.5");
-        version.setFont(AppTheme.FONT_MONO);
-        version.setForeground(AppTheme.TEXT_MUTED);
-        status.add(lbl, BorderLayout.WEST);
-        status.add(version, BorderLayout.EAST);
+        status.add(lbl);
         return status;
     }
 }
