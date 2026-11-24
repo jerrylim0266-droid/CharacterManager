@@ -12,6 +12,7 @@ public class Character {
     private int mana;
 
     public Character(String name, CharacterType type, int level) {
+        validate(name, type, level);
         this.name = name;
         this.type = type;
         this.level = level;
@@ -20,12 +21,28 @@ public class Character {
     }
 
     public Character(int id, String name, CharacterType type, int level, int hitPoints, int attackPower) {
+        validate(name, type, level);
         this.id = id;
         this.name = name;
         this.type = type;
         this.level = level;
         this.hitPoints = hitPoints;
         this.attackPower = attackPower;
+    }
+
+    private static void validate(String name, CharacterType type, int level) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nama tidak boleh kosong");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("Role tidak boleh null");
+        }
+        if (level < 1 || level > 99) {
+            throw new IllegalArgumentException("Level harus antara 1 dan 99");
+        }
+        if (type == CharacterType.MAGE && level > 60) {
+            throw new IllegalArgumentException("Mage tidak boleh melebihi level 60");
+        }
     }
 
     private int calculateBaseHP() {
@@ -92,8 +109,11 @@ public class Character {
     }
 
     public void setLevel(int level) {
-        if (level < 1) {
-            throw new IllegalArgumentException("Level minimal adalah 1");
+        if (level < 1 || level > 99) {
+            throw new IllegalArgumentException("Level harus antara 1 dan 99");
+        }
+        if (type == CharacterType.MAGE && level > 60) {
+            throw new IllegalArgumentException("Mage tidak boleh melebihi level 60");
         }
         this.level = level;
         this.hitPoints = calculateBaseHP();

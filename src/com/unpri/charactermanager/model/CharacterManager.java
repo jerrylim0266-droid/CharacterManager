@@ -9,6 +9,7 @@ import java.util.Objects;
  */
 public class CharacterManager {
 
+    private static final int MAX_CHARACTERS = 20;
     private final ArrayList<Character> characterList;
 
     public CharacterManager() {
@@ -28,6 +29,9 @@ public class CharacterManager {
             System.out.println(" Gagal: karakter dengan nama '" + character.getName() + "' sudah ada!");
             return false;
         }
+        if (characterList.size() >= MAX_CHARACTERS) {
+            throw new IllegalArgumentException("Maksimal 20 karakter dalam daftar");
+        }
         characterList.add(character);
         return true;
     }
@@ -43,6 +47,10 @@ public class CharacterManager {
             }
         }
         return null;                                  // tidak ditemukan setelah seluruh list diperiksa
+    }
+
+    public boolean isNameTaken(String name) {
+        return findByName(name) != null;
     }
 
     /**
