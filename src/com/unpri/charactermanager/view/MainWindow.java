@@ -1,13 +1,13 @@
 package com.unpri.charactermanager.view;
 
 import com.unpri.charactermanager.model.Character;
+import com.unpri.charactermanager.model.CharacterManager;
 import com.unpri.charactermanager.model.CharacterType;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -18,67 +18,81 @@ import javax.swing.JScrollPane;
 
 public class MainWindow extends JFrame {
 
-    private ArrayList<Character> characterList;     // data dari Main.java (Model)
+    private final CharacterManager manager;   // v0.6: menerima MANAGER, bukan salinan list
+    private JPanel cardsPanel;                // field: isinya diganti setiap refresh
+    private JLabel countLabel;                // field: jumlah di header
+    private JLabel statusLabel;               // field: teks di bar status
 
-    public MainWindow(ArrayList<Character> characterList) {
-        super("Character Manager v0.5");            // sprint #5
-        this.characterList = characterList;
+    public MainWindow(CharacterManager manager) {
+        super("Character Manager v0.6");
+        this.manager = manager;
 
-        initComponents();                           // 1. susun semua area
+        initComponents();
 
-        pack();                                     // 2. ukuran awal = preferred size isi
-        setMinimumSize(new Dimension(560, 380));    // 3. batas terkecil yang masih rapi
+        pack();
+        setMinimumSize(new Dimension(820, 420));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);                // 4. pusatkan SETELAH pack()
+        setLocationRelativeTo(null);
     }
 
     private void initComponents() {
-        getContentPane().setBackground(AppTheme.BG_MAIN);  // warna di balik semua panel
-        setLayout(new BorderLayout());                     // kerangka 4 wilayah (JFrame meneruskan ke content pane)
+        getContentPane().setBackground(AppTheme.BG_MAIN);
+        setLayout(new BorderLayout());
 
-        add(createHeaderPanel(), BorderLayout.NORTH);      // judul + jumlah
-        add(createListArea(),    BorderLayout.CENTER);     // daftar berscroll: satu-satunya yang tumbuh
-        add(createLegendPanel(), BorderLayout.EAST);       // legenda role
-        add(createStatusPanel(), BorderLayout.SOUTH);      // bar status
+        add(createHeaderPanel(), BorderLayout.NORTH);
+        add(new CharacterFormPanel(manager, this::refreshList), BorderLayout.WEST); // form baru
+        add(createListArea(),    BorderLayout.CENTER);
+        add(createLegendPanel(), BorderLayout.EAST);
+        add(createStatusPanel(), BorderLayout.SOUTH);
+
+        refreshList();                        // isi daftar untuk pertama kali
     }
 
-    /** NORTH: judul di kiri, jumlah karakter di kanan. */
+    /** Membangun ulang kartu dari data Model dan memperbarui semua penghitung. */
+    private void refreshList() {
+        cardsPanel.removeAll();                                   // buang kartu lama
+        for (Character c : manager.getAllCharacters()) {
+            cardsPanel.add(createCharacterLabel(c));              // buat kartu dari data terbaru
+        }
+        cardsPanel.revalidate();                                  // layout dihitung ulang
+        cardsPanel.repaint();                                     // gambar ulang
+
+        int total = manager.getTotalCharacters();
+        countLabel.setText(total + " karakter");
+        statusLabel.setText("Total: " + total + " karakter  |  Siap");
+    }
+
     private JPanel createHeaderPanel() {
-        JPanel header = new JPanel(new BorderLayout());     // panel bersarang dengan layout sendiri
+        JPanel header = new JPanel(new BorderLayout());
         header.setBackground(AppTheme.BG_MAIN);
-        header.setBorder(BorderFactory.createEmptyBorder(16, 16, 8, 16)); // atas, kiri, bawah, kanan
+        header.setBorder(BorderFactory.createEmptyBorder(16, 16, 8, 16));
 
         JLabel title = new JLabel("Character Manager");
         title.setFont(AppTheme.FONT_TITLE);
         title.setForeground(AppTheme.TEXT_MAIN);
 
-        JLabel count = new JLabel(characterList.size() + " karakter");
-        count.setFont(AppTheme.FONT_BODY);
-        count.setForeground(AppTheme.GOLD);
+        countLabel = new JLabel(" ");                             // teks diisi oleh refreshList()
+        countLabel.setFont(AppTheme.FONT_BODY);
+        countLabel.setForeground(AppTheme.GOLD);
 
-        header.add(title, BorderLayout.WEST);               // rata kiri
-        header.add(count, BorderLayout.EAST);               // rata kanan
+        header.add(title, BorderLayout.WEST);
+        header.add(countLabel, BorderLayout.EAST);
         return header;
     }
 
-    /** CENTER: kartu karakter di dalam JScrollPane. */
     private JScrollPane createListArea() {
-        JPanel cards = new JPanel(new GridLayout(0, 1, 0, 8)); // satu kolom, jarak 8 px
-        cards.setBackground(AppTheme.BG_MAIN);
-        for (Character c : characterList) {
-            cards.add(createCharacterLabel(c));              // kartu ditambah ke PANEL, bukan ke scroll pane
-        }
+        cardsPanel = new JPanel(new GridLayout(0, 1, 0, 8));      // sekarang FIELD, bukan variabel lokal
+        cardsPanel.setBackground(AppTheme.BG_MAIN);
 
-        // holder: menaruh cards di NORTH agar kartu mempertahankan tinggi alaminya
         JPanel holder = new JPanel(new BorderLayout());
         holder.setBackground(AppTheme.BG_MAIN);
-        holder.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 8));
-        holder.add(cards, BorderLayout.NORTH);
+        holder.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        holder.add(cardsPanel, BorderLayout.NORTH);
 
-        JScrollPane scroll = new JScrollPane(holder);        // bungkus HOLDER
-        scroll.setBorder(null);                              // buang border bawaan
+        JScrollPane scroll = new JScrollPane(holder);
+        scroll.setBorder(null);
         scroll.getViewport().setBackground(AppTheme.BG_MAIN);
-        scroll.setPreferredSize(new Dimension(460, 280));    // tanpa ini, 50 karakter = jendela raksasa
+        scroll.setPreferredSize(new Dimension(420, 280));
         return scroll;
     }
 
@@ -90,11 +104,12 @@ public class MainWindow extends JFrame {
                     + " | ATK:" + c.getAttackPower();
 
         JLabel lbl = new JLabel(info);
-        lbl.setFont(AppTheme.FONT_BODY);
-        lbl.setForeground(AppTheme.TEXT_LIGHT);
+        boolean highLevel = c.getLevel() >= AppTheme.LEVEL_HIGHLIGHT_THRESHOLD;
+        lbl.setFont(highLevel ? AppTheme.FONT_LEVEL_HIGH : AppTheme.FONT_BODY);
+        lbl.setForeground(highLevel ? AppTheme.GOLD : AppTheme.TEXT_LIGHT);
         lbl.setBackground(AppTheme.colorFor(c.getType()));
         lbl.setOpaque(true);                                 // wajib agar background tampak
-        lbl.setBorder(AppTheme.CARD_BORDER);
+        lbl.setBorder(AppTheme.cardBorderFor(c.getType()));
         lbl.setToolTipText(AppTheme.describe(c.getType()));
         lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return lbl;
@@ -128,15 +143,14 @@ public class MainWindow extends JFrame {
         return legend;
     }
 
-    /** SOUTH: bar status rata kiri. */
     private JPanel createStatusPanel() {
         JPanel status = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 6));
         status.setBackground(AppTheme.BG_STATUS);
 
-        JLabel lbl = new JLabel("Total: " + characterList.size() + " karakter  |  Siap");
-        lbl.setFont(AppTheme.FONT_MONO);
-        lbl.setForeground(AppTheme.TEXT_MUTED);
-        status.add(lbl);
+        statusLabel = new JLabel(" ");                            // diisi oleh refreshList()
+        statusLabel.setFont(AppTheme.FONT_MONO);
+        statusLabel.setForeground(AppTheme.TEXT_MUTED);
+        status.add(statusLabel);
         return status;
     }
 }
