@@ -17,6 +17,8 @@ public final class AppTheme {
     public static final Color TEXT_MUTED = Color.decode("#9d9dbf");
     public static final Color TEXT_LIGHT = Color.WHITE;
     public static final Color GOLD = Color.decode("#fdcb6e");
+    public static final Color ERROR = Color.decode("#ff7675");
+    public static final Color SUCCESS = Color.decode("#55efc4");
     public static final Color WARRIOR = Color.decode("#d63031");
     public static final Color MAGE = Color.decode("#0984e3");
     public static final Color ARCHER = Color.decode("#00b894");
