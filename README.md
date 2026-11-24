@@ -38,10 +38,11 @@ rata-rata level.
 # Aliran Data dan MVC
 
 `Main.java` membuat data karakter melalui `CharacterManager`, lalu mengirim
-salinan daftar karakter ke `MainWindow`. View menampilkan setiap karakter
-sebagai kartu dengan warna berdasarkan role. Model mengelola data, sedangkan
-view bertugas menampilkan data; GUI dijalankan di Event Dispatch Thread
-menggunakan `SwingUtilities.invokeLater()`.
+manager tersebut ke `MainWindow`. Form menambahkan data melalui manager,
+sementara jendela memperbarui daftar setelah karakter berhasil disimpan. Model
+mengelola data, sedangkan view bertugas menampilkan data; GUI dijalankan di
+Event Dispatch Thread menggunakan `SwingUtilities.invokeLater()`.
+
 
 # Karakter Tambahan
 
@@ -84,8 +85,8 @@ Luna       | HEALER  | Lv.2 | HP:120 | ATK:20
 
 # dua porpeti tambahan
 
-- **Tooltip detail** menampilkan role, HP, dan ATK ketika kartu disorot, sehingga informasi tambahan tersedia tanpa membuat daftar lebih padat.
-- **Border sesuai role** mengulang kode warna role pada tepian kartu, sehingga jenis karakter tetap mudah dibedakan dan tampil konsisten.
+- Tooltip detail menampilkan role, HP, dan ATK ketika kartu disorot, sehingga informasi tambahan tersedia tanpa membuat daftar lebih padat.
+- Border sesuai role mengulang kode warna role pada tepian kartu, sehingga jenis karakter tetap mudah dibedakan dan tampil konsisten.
 
 # TP12 — Layout Adaptif dan Pengamatan Resize
 
@@ -129,6 +130,62 @@ Screenshot ukuran awal dan saat jendela dilebarkan berasal dari hasil aplikasi y
 
 Panel statistik dipilih agar empat nilai mempunyai sel berukuran seragam dan mudah dibandingkan dalam bentuk dua baris dan dua kolom. `FlowLayout` ditolak untuk statistik karena lebar tiap label berbeda dan alirannya dapat berpindah baris saat jendela berubah ukuran; `GridLayout` membuat susunan ringkas lebih konsisten.
 
+# TP14 — Validasi Form dan Mini-Challenge
+
+# Screenshot hasil pengujian
+
+![Error nama kosong](images/TP14-nama-kosong.png)
+
+![Error nama duplikat](images/TP14-nama-duplikat.png)
+
+![Sukses dengan kartu baru](images/TP14-kartu-baru.png)
+
+# Aturan validasi tambahan
+
+- Nama tidak boleh memiliki dua spasi berurutan (View). Aturan ini
+  menyangkut format masukan dari form dan memberi umpan balik langsung sebelum
+  data diserahkan ke Model. Input tetap di-`trim()` lebih dahulu.
+- Daftar maksimal 20 karakter (Model / `CharacterManager`). Batas koleksi
+  harus berlaku untuk semua pemanggil `addCharacter()`, bukan hanya form.
+  Jika batas tercapai, Model melempar `IllegalArgumentException` agar form
+  menampilkan pesan Model yang sama seperti aturan level Mage.
+
+# Aturan Mini-Challenge
+
+Karakter `MAGE` tidak boleh memiliki level di atas 60. Aturan ini berada pada
+Model (`Character`) agar tetap berlaku walaupun objek dibuat di luar GUI.
+Konstruktor menolak input tersebut dengan `IllegalArgumentException`; form
+yang sudah menangani exception Model menampilkan pesannya tanpa validasi Mage
+khusus di View. `setLevel()` juga menerapkan batas yang sama.
+
+# Tabel uji validasi
+
+Pengujian dilakukan pada form dan Model. Hasil nyata berikut adalah hasil
+verifikasi implementasi, bukan klaim screenshot pengujian manual.
+
+| Input | Hasil diharapkan | Hasil nyata | Lapisan yang menangkap | Catatan/perbaikan |
+|---|---|---|---|---|
+| `MAGE`, level 60 | Diterima | Diterima | Model | Sesuai harapan; tidak perlu perbaikan. |
+| `MAGE`, level 61 | Ditolak; pesan level Mage maksimal 60 | Ditolak; pesan sesuai | Model | Sesuai harapan; pesan Model tampil di form. |
+| `WARRIOR`, level 99 | Diterima | Diterima | Model | Sesuai harapan; tidak perlu perbaikan. |
+| `WARRIOR`, level 0 | Ditolak; level harus 1–99 | Ditolak; pesan sesuai | Model | Sesuai harapan; tidak perlu perbaikan. |
+| Nama `Ari  Jaya` | Ditolak; spasi berurutan | Ditolak; pesan sesuai | View | Sesuai harapan; tidak perlu perbaikan. |
+| Nama `Ari3` | Ditolak; karakter selain huruf/spasi | Ditolak; pesan sesuai | View | Sesuai harapan; tidak perlu perbaikan. |
+| Nama kosong | Ditolak; nama wajib diisi | Ditolak; pesan sesuai | View | Sesuai harapan; tidak perlu perbaikan. |
+| Nama duplikat `Arjuna` | Ditolak; nama sudah dipakai | Ditolak; pesan sesuai | View | Sesuai harapan; tidak perlu perbaikan. |
+| Spasi luar pada `  Arjuna  `, jika belum terdaftar | Diterima sebagai `Arjuna` | Diterima sebagai `Arjuna` | View (`trim()`), lalu Model | Sesuai harapan; input dibersihkan dengan `trim()`. |
+| Penambahan karakter ke-20 | Diterima | Diterima | Model (`CharacterManager`) | Sesuai harapan; tidak perlu perbaikan. |
+| Penambahan karakter ke-21 | Ditolak; daftar maksimal 20 | Ditolak; pesan sesuai | Model (`CharacterManager`) | Sesuai harapan; pesan Model tampil di form. |
+
+# Kompromi implementasi sementara
+
+Form memakai `ActionListener` sederhana pada tombol Simpan dan aksi Enter di
+field nama agar alur dapat diuji tanpa pola event yang lebih kompleks. Setelah
+validasi, form memanggil `CharacterManager` secara langsung tanpa controller
+atau service perantara. Pilihan ini mengurangi kode untuk aplikasi pembelajaran
+kecil, tetapi membuat form lebih bergantung pada API manager dan lebih sulit
+diuji terisolasi. Jika aplikasi berkembang, alur tersebut dapat dipindahkan ke
+controller dan dependency manager dapat diabstraksikan.
 
 # Struktur Folder Project
 
@@ -142,7 +199,10 @@ CharacterManager/
 │   ├── screenshot output CRUD.png
 │   ├── TP12-ukuran-awal.png
 │   ├── TP12-jendela-dilebarkan.png
-│   └── TP12-scrollbar-terlihat.png
+│   ├── TP12-scrollbar-terlihat.png
+│   ├── TP14-nama-kosong.png
+│   ├── TP14-nama-duplikat.png
+│   └── TP14-kartu-baru.png
 └── src/
     ├── Main.java
     └── com/
@@ -154,6 +214,7 @@ CharacterManager/
                 │   └── CharacterType.java
                 └── view/
                     ├── AppTheme.java
+                    ├── CharacterFormPanel.java
                     └── MainWindow.java
 ```
 # Identitas Mahasiswa 
@@ -170,3 +231,5 @@ CharacterManager/
 - Google Docs — TP10 Bagian D:[Buka dokumen Google Docs](https://docs.google.com/document/d/1BN0ADzrpbspCdLpf3GC0eMQ7rpXkaZK-UzuvVE7buAY/edit?usp=sharing)
 
 - Google Docs — TP12 bagian D:[Buka dokumen Google Docs](https://docs.google.com/document/d/1b9nhzCemmz9y30Uf0B_O22DC56GGbE1eh-lrj8qH7Hc/edit?usp=sharing)
+
+- Google Docs — TP14 Bagian D:[Buka dokumen Google Docs](https://docs.google.com/document/d/1EOytc7nY-HM6d2qAgXP2oD-FiTxCfIzZ4Uves9aNHME/edit?usp=sharing)
